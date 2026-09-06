@@ -15,10 +15,7 @@ export default async function handler(req: any, res: any) {
   } catch (error: any) {
     console.error('Vercel API DB Initialization Error:', error)
     return res.status(500).json({
-      ok: false,
-      error: 'Database Connection Error',
-      message: error?.message || 'Could not connect to MongoDB Atlas.',
-      hint: 'Please check MONGODB_URI in Vercel environment variables and MongoDB Atlas Network Access (IP whitelist 0.0.0.0/0).'
+      message: `Database Connection Error: ${error?.message || 'Could not connect to MongoDB Atlas.'}`
     })
   }
 }

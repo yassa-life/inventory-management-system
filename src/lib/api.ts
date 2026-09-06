@@ -5,7 +5,7 @@ const base=import.meta.env.VITE_API_URL||'/api'
 async function request<T>(path:string,options:RequestInit={},token?:string):Promise<T>{
   const response=await fetch(`${base}${path}`,{...options,headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{ }),...options.headers}})
   const data=await response.json().catch(()=>({}))
-  if(!response.ok) throw new Error(data.message||'Request failed')
+  if(!response.ok) throw new Error(data.message||data.error||`Request failed (${response.status})`)
   return data
 }
 export const api={
