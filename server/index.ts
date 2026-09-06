@@ -6,9 +6,10 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { differenceInCalendarDays, format } from 'date-fns'
 import { z } from 'zod'
-import { client, db, id, initializeDatabase, now, oid } from './db.js'
-import { seed } from './seed.js'
-import { allocateFefo } from './stock.js'
+import { client, db, id, initializeDatabase, now, oid } from './db.ts'
+import { seed } from './seed.ts'
+import { allocateFefo } from './stock.ts'
+
 
 const app=express(),port=Number(process.env.API_PORT||4000),jwtSecret=process.env.JWT_SECRET||'development-only-secret-change-me'
 app.use(helmet());app.use(cors({origin:process.env.CLIENT_ORIGIN||'*'}));app.use(express.json({limit:'100kb'}))

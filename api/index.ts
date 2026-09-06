@@ -1,6 +1,6 @@
-import { app } from '../server/index.js'
-import { initializeDatabase } from '../server/db.js'
-import { seed } from '../server/seed.js'
+import { app } from '../server/index.ts'
+import { initializeDatabase } from '../server/db.ts'
+import { seed } from '../server/seed.ts'
 
 let isDbInitialized = false
 
