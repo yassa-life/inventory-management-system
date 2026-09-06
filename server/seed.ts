@@ -1,7 +1,8 @@
 import bcrypt from 'bcryptjs'
 import { addDays } from 'date-fns'
-import { categories, medicines } from './seed-data.ts'
-import { client, db, initializeDatabase, now } from './db.ts'
+import { categories, medicines } from './seed-data.js'
+import { client, db, initializeDatabase, now } from './db.js'
+
 
 export async function seed(){
   await initializeDatabase();const database=db(),categoryIds:any[]=[]

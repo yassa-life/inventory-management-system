@@ -6,12 +6,13 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { differenceInCalendarDays, format } from 'date-fns'
 import { z } from 'zod'
-import { client, db, id, initializeDatabase, now, oid } from './db.ts'
-import { seed } from './seed.ts'
-import { allocateFefo } from './stock.ts'
+import { client, db, id, initializeDatabase, now, oid } from './db.js'
+import { seed } from './seed.js'
+import { allocateFefo } from './stock.js'
 
 const app=express(),port=Number(process.env.API_PORT||4000),jwtSecret=process.env.JWT_SECRET||'development-only-secret-change-me'
-app.use(helmet());app.use(cors({origin:process.env.CLIENT_ORIGIN||'http://localhost:5173'}));app.use(express.json({limit:'100kb'}))
+app.use(helmet());app.use(cors({origin:process.env.CLIENT_ORIGIN||'*'}));app.use(express.json({limit:'100kb'}))
+
 const today=()=>format(now(),'yyyy-MM-dd')
 function auth(req:any,res:any,next:any){try{req.user=jwt.verify(req.headers.authorization?.replace(/^Bearer\s+/i,''),jwtSecret);next()}catch{res.status(401).json({message:'Please sign in again.'})}}
 function roles(...allowed:string[]){return(req:any,res:any,next:any)=>allowed.includes(req.user.role)?next():res.status(403).json({message:'You do not have permission for this action.'})}
