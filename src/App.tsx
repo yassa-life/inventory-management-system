@@ -84,7 +84,10 @@ function ChangePasswordModal({session,onPasswordChanged}:{session:Session;onPass
   return <div className="modal-overlay"><div className="modal-card"><div className="modal-head"><h2>Password Change Required</h2></div><p style={{margin:0,fontSize:13,color:'#68776f'}}>You are currently logged in with a temporary password. You must set a new password before proceeding.</p>{error&&<div className="error"><AlertTriangle size={16}/>{error}</div>}<form onSubmit={submit} style={{display:'grid',gap:14}}><label>Current Temporary Password<input type="password" required value={currentPassword} onChange={e=>setCurrentPassword(e.target.value)}/></label><label>New Password (min 8 characters)<input type="password" required minLength={8} value={newPassword} onChange={e=>setNewPassword(e.target.value)}/></label><label>Confirm New Password<input type="password" required minLength={8} value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)}/></label><button className="primary" disabled={busy}>{busy?'Updating...':'Set New Password'}</button></form></div></div>
 }
 
+const nav=[['/', 'dashboard',LayoutDashboard],['/inventory','inventory',Boxes],['/receive','receive',PackageCheck],['/issues','issues',ArrowDownToLine],['/alerts','alerts',Bell],['/reports','reports',BarChart3],['/users','users',Users],['/audit','audit',ShieldCheck],['/settings','settings',Settings]] as const
+
 function Shell({session,locale,setLocale,logout,setSession}:{session:Session;locale:Locale;setLocale:(l:Locale)=>void;logout:()=>void;setSession:(s:Session)=>void}){
+
   const [mobile,setMobile]=useState(false)
   const t=(k:string)=>translate(locale,k)
   const allowed=(path:string)=>!(path==='/users'&&session?.user?.role!=='administrator')&&!(path==='/audit'&&!['administrator','auditor'].includes(session?.user?.role||''))&&!(path==='/receive'&&!['administrator','storekeeper'].includes(session?.user?.role||''))
