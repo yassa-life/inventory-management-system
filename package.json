@@ -1,0 +1,40 @@
+{
+  "name": "suwasetha-inventory",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n web,api -c green,yellow \"vite\" \"node --watch --experimental-strip-types server/index.ts\"",
+    "dev:web": "vite",
+    "dev:api": "node --watch --experimental-strip-types server/index.ts",
+    "build": "vite build",
+    "start": "node --experimental-strip-types server/index.ts",
+    "test": "vitest run",
+    "db:start": "powershell -ExecutionPolicy Bypass -File scripts/start-local-mongodb.ps1",
+    "db:init": "node --experimental-strip-types server/init-replica.ts",
+    "db:seed": "node --experimental-strip-types server/seed.ts"
+  },
+  "dependencies": {
+    "bcryptjs": "3.0.2",
+    "cors": "2.8.5",
+    "date-fns": "4.1.0",
+    "dotenv": "16.6.1",
+    "express": "5.1.0",
+    "helmet": "8.1.0",
+    "jsonwebtoken": "9.0.2",
+    "lucide-react": "0.468.0",
+    "mongodb": "6.21.0",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "react-router-dom": "6.30.6",
+    "recharts": "2.15.1",
+    "zod": "3.24.2"
+  },
+  "devDependencies": {
+    "concurrently": "9.1.2",
+    "jsdom": "25.0.1",
+    "typescript": "5.7.3",
+    "vite": "6.1.0",
+    "vitest": "3.0.5"
+  }
+}
