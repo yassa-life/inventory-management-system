@@ -7,7 +7,8 @@
     "dev": "concurrently -n web,api -c green,yellow \"vite\" \"node --watch --experimental-strip-types server/index.ts\"",
     "dev:web": "vite",
     "dev:api": "node --watch --experimental-strip-types server/index.ts",
-    "build": "vite build",
+    "build": "vite build && esbuild api/index.ts --bundle --platform=node --format=esm --packages=external --target=node20 --outfile=api/index.js",
+    "build:api": "esbuild api/index.ts --bundle --platform=node --format=esm --packages=external --target=node20 --outfile=api/index.js",
     "start": "node --experimental-strip-types server/index.ts",
     "test": "vitest run",
     "db:start": "powershell -ExecutionPolicy Bypass -File scripts/start-local-mongodb.ps1",
@@ -32,6 +33,7 @@
   },
   "devDependencies": {
     "concurrently": "9.1.2",
+    "esbuild": "^0.25.0",
     "jsdom": "25.0.1",
     "typescript": "5.7.3",
     "vite": "6.1.0",
