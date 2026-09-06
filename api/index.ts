@@ -5,10 +5,20 @@ import { seed } from '../server/seed.ts'
 let isDbInitialized = false
 
 export default async function handler(req: any, res: any) {
-  if (!isDbInitialized) {
-    await initializeDatabase()
-    await seed()
-    isDbInitialized = true
+  try {
+    if (!isDbInitialized) {
+      await initializeDatabase()
+      await seed().catch(err => console.warn('Seed warning:', err.message))
+      isDbInitialized = true
+    }
+    return app(req, res)
+  } catch (error: any) {
+    console.error('Vercel API DB Initialization Error:', error)
+    return res.status(500).json({
+      ok: false,
+      error: 'Database Connection Error',
+      message: error?.message || 'Could not connect to MongoDB Atlas.',
+      hint: 'Please check MONGODB_URI in Vercel environment variables and MongoDB Atlas Network Access (IP whitelist 0.0.0.0/0).'
+    })
   }
-  return app(req, res)
 }
