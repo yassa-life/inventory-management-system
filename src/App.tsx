@@ -1,4 +1,4 @@
-import { FormEvent, ReactNode, useEffect, useState } from 'react'
+import { Component, FormEvent, ReactNode, useEffect, useState } from 'react'
 import { Navigate, NavLink, Route, Routes, useNavigate, useParams } from 'react-router-dom'
 import { AlertTriangle, Archive, ArrowDownToLine, BarChart3, Bell, Boxes, ChevronRight, ClipboardList, Download, Key, Languages, LayoutDashboard, Leaf, LogOut, Menu, PackageCheck, Pencil, Plus, Search, Settings, ShieldCheck, Trash2, Users, X } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
@@ -6,16 +6,65 @@ import { api, Role, Session } from './lib/api'
 import { Locale, translate } from './lib/i18n'
 
 const appName=import.meta.env.VITE_APP_NAME||'Suwasetha Indigenous Medicine Hospital'
-const store={get:()=>{try{const session=JSON.parse(localStorage.getItem('suwasetha_session')||'null') as Session|null;return session?.token==='demo-token'?null:session}catch{return null}},set:(s:Session|null)=>s?localStorage.setItem('suwasetha_session',JSON.stringify(s)):localStorage.removeItem('suwasetha_session')}
+const store={
+  get:()=>{
+    try{
+      const raw = localStorage.getItem('suwasetha_session');
+      if (!raw) return null;
+      const session = JSON.parse(raw) as Session | null;
+      if (!session || !session.token || !session.user || typeof session.user !== 'object' || !session.user.name) {
+        localStorage.removeItem('suwasetha_session');
+        return null;
+      }
+      return session.token === 'demo-token' ? null : session;
+    } catch {
+      localStorage.removeItem('suwasetha_session');
+      return null;
+    }
+  },
+  set:(s:Session|null)=>s?localStorage.setItem('suwasetha_session',JSON.stringify(s)):localStorage.removeItem('suwasetha_session')
+}
 const pretty=(n:number|string)=>new Intl.NumberFormat('en-LK',{maximumFractionDigits:2}).format(Number(n))
 const date=(v:string)=>new Intl.DateTimeFormat('en-LK',{day:'2-digit',month:'short',year:'numeric'}).format(new Date(v))
+
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: any }> {
+  state = { hasError: false, error: null }
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error }
+  }
+  componentDidCatch(error: any, info: any) {
+    console.error('App Runtime Error:', error, info)
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#f4f0e7', padding: 20 }}>
+          <div style={{ background: '#fff', padding: 30, borderRadius: 14, border: '1px solid #ddd7ca', maxWidth: 450, textAlign: 'center' }}>
+            <h2 style={{ color: '#173f35', marginTop: 0 }}>Session Refreshed</h2>
+            <p style={{ color: '#68776f', fontSize: 13 }}>
+              {this.state.error?.message || 'A browser session update occurred.'}
+            </p>
+            <button
+              onClick={() => { localStorage.clear(); window.location.href = '/login' }}
+              style={{ background: '#173f35', color: '#fff', border: 0, padding: '10px 18px', borderRadius: 8, cursor: 'pointer', fontWeight: 700 }}
+            >
+              Sign In Again
+            </button>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 export default function App(){
   const [session,setSession]=useState<Session|null>(store.get()); const [locale,setLocaleState]=useState<Locale>((localStorage.getItem('locale') as Locale)||'en')
   const setLocale=(v:Locale)=>{setLocaleState(v);localStorage.setItem('locale',v)}
   const login=(s:Session)=>{store.set(s);setSession(s)}; const logout=()=>{store.set(null);setSession(null)}
-  return <Routes><Route path="/login" element={session?<Navigate to="/"/>:<Login locale={locale} setLocale={setLocale} onLogin={login}/>}/><Route path="/*" element={session?<Shell session={session} locale={locale} setLocale={setLocale} logout={logout} setSession={setSession}/>:<Navigate to="/login"/>}/></Routes>
+  return <ErrorBoundary><Routes><Route path="/login" element={session?<Navigate to="/"/>:<Login locale={locale} setLocale={setLocale} onLogin={login}/>}/><Route path="/*" element={session?<Shell session={session} locale={locale} setLocale={setLocale} logout={logout} setSession={setSession}/>:<Navigate to="/login"/>}/></Routes></ErrorBoundary>
 }
+
 
 function Login({locale,setLocale,onLogin}:{locale:Locale;setLocale:(l:Locale)=>void;onLogin:(s:Session)=>void}){
   const t=(k:string)=>translate(locale,k); const [email,setEmail]=useState('');const [password,setPassword]=useState('');const [error,setError]=useState('');const [busy,setBusy]=useState(false);const [showReset,setShowReset]=useState(false)
@@ -38,25 +87,30 @@ function ChangePasswordModal({session,onPasswordChanged}:{session:Session;onPass
 function Shell({session,locale,setLocale,logout,setSession}:{session:Session;locale:Locale;setLocale:(l:Locale)=>void;logout:()=>void;setSession:(s:Session)=>void}){
   const [mobile,setMobile]=useState(false)
   const t=(k:string)=>translate(locale,k)
-  const allowed=(path:string)=>!(path==='/users'&&session.user.role!=='administrator')&&!(path==='/audit'&&!['administrator','auditor'].includes(session.user.role))&&!(path==='/receive'&&!['administrator','storekeeper'].includes(session.user.role))
+  const allowed=(path:string)=>!(path==='/users'&&session?.user?.role!=='administrator')&&!(path==='/audit'&&!['administrator','auditor'].includes(session?.user?.role||''))&&!(path==='/receive'&&!['administrator','storekeeper'].includes(session?.user?.role||''))
   const handlePasswordChanged=(s:Session)=>{
     store.set(s)
     setSession(s)
   }
 
+  const userName = session?.user?.name || 'User'
+  const userRole = session?.user?.role || 'staff'
+  const userInitials = userName.split(' ').map(x => x[0]).filter(Boolean).slice(0, 2).join('') || 'U'
+
   return (
     <div className="app">
-      {session.user.mustChangePassword && <ChangePasswordModal session={session} onPasswordChanged={handlePasswordChanged} />}
+      {session?.user?.mustChangePassword && <ChangePasswordModal session={session} onPasswordChanged={handlePasswordChanged} />}
       <aside className={mobile?'sidebar open':'sidebar'}>
         <button className="close-nav" onClick={()=>setMobile(false)}><X/></button>
         <Brand/>
         <nav>{nav.filter(([p])=>allowed(p)).map(([path,key,Icon])=><NavLink key={path} to={path} end={path==='/'} onClick={()=>setMobile(false)}><Icon size={19}/><span>{t(key)}</span></NavLink>)}</nav>
         <div className="side-foot">
           <div className="connection"><i/> MongoDB · Atlas</div>
-          <div className="profile"><span>{session.user.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</span><div><strong>{session.user.name}</strong><small>{session.user.role}</small></div></div>
+          <div className="profile"><span>{userInitials}</span><div><strong>{userName}</strong><small>{userRole}</small></div></div>
           <button className="signout" onClick={logout}><LogOut size={17}/>{t('signout')}</button>
         </div>
       </aside>
+
       {mobile&&<div className="scrim" onClick={()=>setMobile(false)}/>}
       <section className="content">
         <header>
