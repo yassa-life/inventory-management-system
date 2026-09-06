@@ -7,7 +7,7 @@
     "dev": "concurrently -n web,api -c green,yellow \"vite\" \"node --watch --experimental-strip-types server/index.ts\"",
     "dev:web": "vite",
     "dev:api": "node --watch --experimental-strip-types server/index.ts",
-    "build": "vite build && esbuild api/index.ts --bundle --platform=node --format=esm --packages=external --target=node20 --outfile=api/index.js",
+    "build": "vite build",
     "build:api": "esbuild api/index.ts --bundle --platform=node --format=esm --packages=external --target=node20 --outfile=api/index.js",
     "start": "node --experimental-strip-types server/index.ts",
     "test": "vitest run",
